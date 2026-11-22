@@ -1,4 +1,3 @@
-
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import (
@@ -13,12 +12,13 @@ def create_rag_chain(vector_store):
 
     retriever = vector_store.as_retriever(
         search_type="similarity",
-        search_kwargs={"k": 4}
+        search_kwargs={"k": 3}
     )
 
     llm = ChatGoogleGenerativeAI(
-        model="gemini-3.8-flash",
-        temperature=0
+    model="gemini-3.5-flash-lite",
+    max_retries=1,
+    timeout=15
     )
 
     prompt = PromptTemplate(

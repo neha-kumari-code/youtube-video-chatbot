@@ -45,26 +45,39 @@ def home():
     return {"message": "YouTube AI Chatbot API is running"}
 
 
+import time
+
 @app.post("/api/video/process")
 def process_video(request: ProcessVideoRequest):
-
     try:
+        start = time.perf_counter()
+
         video_id = extract_video_id(request.youtube_url)
 
-        # Extract transcript
         transcript = get_transcript(video_id)
+        print("Transcript fetched:", round(time.perf_counter() - start, 2), "sec")
 
-        # Split transcript
         chunks = split_transcript(transcript)
+        print("Chunks created:", len(chunks))
 
-        # Create embeddings and FAISS index
+        embedding_start = time.perf_counter()
+
         vector_store = create_vector_store(chunks)
 
-        # Create RAG chain
-        chain = create_rag_chain(vector_store)
+        print(
+            "Embedding time:",
+            round(time.perf_counter() - embedding_start, 2),
+            "sec"
+        )
 
-        # Store chain for later chat requests
+        chain = create_rag_chain(vector_store)
         video_chains[video_id] = chain
+
+        print(
+            "Total processing time:",
+            round(time.perf_counter() - start, 2),
+            "sec"
+        )
 
         return {
             "message": "Video processed successfully",
@@ -73,16 +86,12 @@ def process_video(request: ProcessVideoRequest):
         }
 
     except Exception as e:
-        raise HTTPException(
-            status_code=400,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=400, detail=str(e))
 
+import time
 
 @app.post("/api/chat")
 def chat(request: ChatRequest):
-
-    # Check whether video was processed
     if request.video_id not in video_chains:
         raise HTTPException(
             status_code=404,
@@ -91,8 +100,6 @@ def chat(request: ChatRequest):
 
     try:
         chain = video_chains[request.video_id]
-
-        # Invoke RAG chain
         answer = chain.invoke(request.question)
 
         return {
@@ -102,7 +109,5 @@ def chat(request: ChatRequest):
         }
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
+        print("Chat error:", str(e))
+        raise HTTPException(status_code=500, detail=str(e))

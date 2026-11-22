@@ -35,8 +35,8 @@ def split_transcript(transcript: str):
     """Split transcript into smaller chunks."""
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=2000,
-        chunk_overlap=200
+        chunk_size=1000,
+        chunk_overlap=100
     )
 
     chunks = splitter.create_documents([transcript])
