@@ -1,8 +1,9 @@
-
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+load_dotenv()
 from rag.transcript import (
     extract_video_id,
     get_transcript,
